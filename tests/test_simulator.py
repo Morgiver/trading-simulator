@@ -1,6 +1,7 @@
 """Tests for the trading simulator."""
 
 import pytest
+from datetime import datetime
 from trading_simulator import (
     TradingSimulator,
     OrderType,
@@ -10,6 +11,21 @@ from trading_simulator import (
     Candle,
 )
 
+
+
+
+def create_candle(open_price, high_price, low_price, close_price, volume=1000, date=None):
+    """Helper function to create a Candle with trading-frame format."""
+    if date is None:
+        date = datetime.now()
+    return Candle(
+        date=date,
+        open=open_price,
+        high=high_price,
+        low=low_price,
+        close=close_price,
+        volume=volume
+    )
 
 class TestTradingSimulator:
     """Test suite for TradingSimulator."""
@@ -29,7 +45,7 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
         # Update market first
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Place market buy
@@ -52,7 +68,7 @@ class TestTradingSimulator:
         """Test placing a market sell order (short)."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Place market sell (short)
@@ -72,12 +88,12 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
         # Open long position
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
         # Price goes up
-        candle2 = Candle(open=105, high=106, low=104, close=105, volume=1000)
+        candle2 = create_candle(105, 106, 104, 105, 1000)
         sim.update_market(candle2)
 
         # Close position
@@ -98,12 +114,12 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open long position
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
         # Price goes up but position not closed
-        candle2 = Candle(open=105, high=106, low=104, close=105, volume=1000)
+        candle2 = create_candle(105, 106, 104, 105, 1000)
         sim.update_market(candle2)
 
         pnl = sim.get_pnl()
@@ -115,7 +131,7 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Set initial market price
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Place buy limit below current price
@@ -130,7 +146,7 @@ class TestTradingSimulator:
         assert len(sim.get_pending_orders()) == 1
 
         # Price drops to trigger limit
-        candle2 = Candle(open=99, high=99, low=97, close=98, volume=1000)
+        candle2 = create_candle(99, 99, 97, 98, 1000)
         trades = sim.update_market(candle2)
 
         # Order should be executed
@@ -145,7 +161,7 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open long position with stop loss
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(
             order_type=OrderType.MARKET,
@@ -158,7 +174,7 @@ class TestTradingSimulator:
         assert len(sim.get_pending_orders()) == 1
 
         # Price drops to trigger stop loss
-        candle2 = Candle(open=96, high=97, low=94, close=95, volume=1000)
+        candle2 = create_candle(96, 97, 94, 95, 1000)
         trades = sim.update_market(candle2)
 
         # Stop loss should have executed
@@ -174,7 +190,7 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open long position with take profit
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(
             order_type=OrderType.MARKET,
@@ -187,7 +203,7 @@ class TestTradingSimulator:
         assert len(sim.get_pending_orders()) == 1
 
         # Price rises to trigger take profit
-        candle2 = Candle(open=108, high=111, low=107, close=110, volume=1000)
+        candle2 = create_candle(108, 111, 107, 110, 1000)
         trades = sim.update_market(candle2)
 
         # Take profit should have executed
@@ -202,7 +218,7 @@ class TestTradingSimulator:
         """Test get_state method."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
@@ -218,7 +234,7 @@ class TestTradingSimulator:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
         # Do some trading
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
@@ -243,11 +259,11 @@ class TestPnLModes:
             fee_rate=0.0,
         )
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
-        candle2 = Candle(open=105, high=106, low=104, close=105, volume=1000)
+        candle2 = create_candle(105, 106, 104, 105, 1000)
         sim.update_market(candle2)
 
         pnl = sim.get_pnl()
@@ -263,11 +279,11 @@ class TestPnLModes:
             fee_rate=0.0,
         )
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
-        candle2 = Candle(open=101, high=102, low=100, close=101, volume=1000)
+        candle2 = create_candle(101, 102, 100, 101, 1000)
         sim.update_market(candle2)
 
         pnl = sim.get_pnl()
@@ -284,11 +300,11 @@ class TestPnLModes:
             fee_rate=0.0,
         )
 
-        candle = Candle(open=1.1000, high=1.1010, low=1.0990, close=1.1000, volume=1000)
+        candle = create_candle(1.1000, 1.1010, 1.0990, 1.1000, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
-        candle2 = Candle(open=1.1010, high=1.1020, low=1.1005, close=1.1010, volume=1000)
+        candle2 = create_candle(1.1010, 1.1020, 1.1005, 1.1010, 1000)
         sim.update_market(candle2)
 
         pnl = sim.get_pnl()
@@ -305,11 +321,11 @@ class TestPnLModes:
             fee_rate=0.0,
         )
 
-        candle = Candle(open=4500, high=4510, low=4490, close=4500, volume=1000)
+        candle = create_candle(4500, 4510, 4490, 4500, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
-        candle2 = Candle(open=4510, high=4520, low=4505, close=4515, volume=1000)
+        candle2 = create_candle(4510, 4520, 4505, 4515, 1000)
         sim.update_market(candle2)
 
         pnl = sim.get_pnl()
@@ -325,12 +341,12 @@ class TestPositionReversal:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open long position
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
         # Price moves up
-        candle2 = Candle(open=105, high=106, low=104, close=105, volume=1000)
+        candle2 = create_candle(105, 106, 104, 105, 1000)
         sim.update_market(candle2)
 
         # Reverse: sell 2 (close 1 long, open 1 short)
@@ -348,12 +364,12 @@ class TestPositionReversal:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open short position
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.SELL, 1.0)
 
         # Price moves down
-        candle2 = Candle(open=95, high=96, low=94, close=95, volume=1000)
+        candle2 = create_candle(95, 96, 94, 95, 1000)
         sim.update_market(candle2)
 
         # Reverse: buy 2 (close 1 short, open 1 long)
@@ -371,12 +387,12 @@ class TestPositionReversal:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open long position of 3 units
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 3.0)
 
         # Price moves up
-        candle2 = Candle(open=110, high=111, low=109, close=110, volume=1000)
+        candle2 = create_candle(110, 111, 109, 110, 1000)
         sim.update_market(candle2)
 
         # Partially close: sell 2 out of 3
@@ -395,12 +411,12 @@ class TestPositionReversal:
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
         # Open short position of 3 units
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.SELL, 3.0)
 
         # Price moves down
-        candle2 = Candle(open=90, high=91, low=89, close=90, volume=1000)
+        candle2 = create_candle(90, 91, 89, 90, 1000)
         sim.update_market(candle2)
 
         # Partially close: buy 2 out of 3
@@ -422,7 +438,7 @@ class TestOrderManagement:
         """Test cancelling a pending limit order."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Place limit order
@@ -444,7 +460,7 @@ class TestOrderManagement:
         """Test cancelling a non-existent order."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Try to cancel non-existent order
@@ -455,7 +471,7 @@ class TestOrderManagement:
         """Test multiple pending orders."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Place multiple orders
@@ -469,14 +485,14 @@ class TestOrderManagement:
         """Test that limit order doesn't execute when price doesn't reach it."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Place buy limit at 95
         sim.place_order(OrderType.LIMIT, OrderSide.BUY, 1.0, price=95.0)
 
         # Price stays above limit
-        candle2 = Candle(open=100, high=102, low=98, close=101, volume=1000)
+        candle2 = create_candle(100, 102, 98, 101, 1000)
         trades = sim.update_market(candle2)
 
         assert len(trades) == 0  # No execution
@@ -490,7 +506,7 @@ class TestErrorHandling:
         """Test placing order with insufficient balance."""
         sim = TradingSimulator(initial_balance=100, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Try to buy more than balance allows
@@ -509,7 +525,7 @@ class TestErrorHandling:
         """Test placing limit order without specifying price."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Try to place limit order without price
@@ -524,7 +540,7 @@ class TestFeesAndSlippage:
         """Test that fees are properly deducted from balance."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         initial_balance = sim.balance
@@ -538,11 +554,11 @@ class TestFeesAndSlippage:
         """Test that fees are included in PnL summary."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.0)
 
-        candle2 = Candle(open=110, high=111, low=109, close=110, volume=1000)
+        candle2 = create_candle(110, 111, 109, 110, 1000)
         sim.update_market(candle2)
         sim.place_order(OrderType.MARKET, OrderSide.SELL, 1.0)
 
@@ -566,7 +582,7 @@ class TestTradeHistory:
         """Test that all trades are recorded in history."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.0)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
 
         # Make multiple trades
@@ -581,7 +597,7 @@ class TestTradeHistory:
         """Test that trade history contains all relevant details."""
         sim = TradingSimulator(initial_balance=10000, fee_rate=0.001)
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
         sim.update_market(candle)
         sim.place_order(OrderType.MARKET, OrderSide.BUY, 1.5)
 
@@ -615,7 +631,7 @@ class TestLeverageAndMargin:
             leverage=10.0,
         )
 
-        candle = Candle(open=100, high=101, low=99, close=100, volume=1000)
+        candle = create_candle(100, 101, 99, 100, 1000)
 
         # Without leverage, can't buy 11 units (requires 1100 > 1000 balance)
         sim1.update_market(candle)

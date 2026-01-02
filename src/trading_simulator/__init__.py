@@ -2,7 +2,8 @@
 
 from .simulator import TradingSimulator
 from .enums import OrderType, OrderSide, PnLMode, OrderStatus
-from .models import Order, Position, Trade, Candle
+from .models import Order, Position, Trade
+from trading_frame import Candle
 
 __version__ = "0.1.0"
 __all__ = [

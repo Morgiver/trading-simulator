@@ -27,7 +27,7 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
-        # No external dependencies for now
+        "trading-frame @ git+https://github.com/Morgiver/trading-frame.git",
     ],
     extras_require={
         "dev": [

@@ -2,7 +2,8 @@
 
 from typing import List, Optional
 from datetime import datetime
-from .models import Order, Candle, Trade
+from trading_frame import Candle
+from .models import Order, Trade
 from .enums import OrderType, OrderSide, OrderStatus
 from .fees import FeeCalculator
 from .enums import PnLMode
@@ -172,11 +173,11 @@ class OrderManager:
 
         if order.side == OrderSide.BUY:
             # Buy limit: waiting for price to drop to limit
-            if candle.low <= order.price:
+            if candle.low_price <= order.price:
                 return order.price
         else:  # SELL
             # Sell limit: waiting for price to rise to limit
-            if candle.high >= order.price:
+            if candle.high_price >= order.price:
                 return order.price
 
         return None
@@ -193,11 +194,11 @@ class OrderManager:
 
         if order.side == OrderSide.BUY:
             # Buy stop: waiting for price to rise to stop
-            if candle.high >= order.price:
+            if candle.high_price >= order.price:
                 return order.price
         else:  # SELL
             # Sell stop: waiting for price to drop to stop
-            if candle.low <= order.price:
+            if candle.low_price <= order.price:
                 return order.price
 
         return None

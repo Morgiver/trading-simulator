@@ -7,21 +7,6 @@ from .enums import OrderType, OrderSide, OrderStatus
 
 
 @dataclass
-class Candle:
-    """Represents a candlestick (OHLCV data)."""
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: float
-    timestamp: Optional[datetime] = None
-
-    def __post_init__(self):
-        if self.timestamp is None:
-            self.timestamp = datetime.now()
-
-
-@dataclass
 class Order:
     """Represents a trading order."""
     order_type: OrderType

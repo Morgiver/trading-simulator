@@ -1,7 +1,8 @@
 """Main trading simulator API."""
 
 from typing import Optional, List, Dict, Any
-from .models import Order, Position, Trade, Candle
+from trading_frame import Candle
+from .models import Order, Position, Trade
 from .enums import OrderType, OrderSide, PnLMode, OrderStatus
 from .pnl_calculator import PnLCalculator
 from .fees import FeeCalculator
@@ -193,7 +194,7 @@ class TradingSimulator:
             List of trades executed during this update
         """
         self.current_candle = candle
-        self.last_price = candle.close
+        self.last_price = candle.close_price
 
         # Check and execute pending orders
         executed_trades = self.order_manager.update_orders(candle)
@@ -204,7 +205,7 @@ class TradingSimulator:
             self.balance -= trade.fees
 
         # Update unrealized PnL
-        self.position_manager.update_unrealized_pnl(candle.close)
+        self.position_manager.update_unrealized_pnl(candle.close_price)
 
         return executed_trades
 
